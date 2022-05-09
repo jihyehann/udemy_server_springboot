@@ -1,11 +1,9 @@
 package com.example.demo.src.user;
 
 
-import com.example.demo.src.user.model.DeleteUserReq;
-import com.example.demo.src.user.model.GetUserRes;
-import com.example.demo.src.user.model.PatchUserReq;
-import com.example.demo.src.user.model.PostUserReq;
+import com.example.demo.src.user.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -22,15 +20,65 @@ public class UserDao {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
-    public List<GetUserRes> getUsers(){
-        String getUsersQuery = "select userIdx,name,nickName,email from User";
-        return this.jdbcTemplate.query(getUsersQuery,
-                (rs,rowNum) -> new GetUserRes(
-                        rs.getInt("userIdx"),
-                        rs.getString("name"),
-                        rs.getString("nickName"),
-                        rs.getString("email")
-                ));
+    // User 정보 조회
+    public GetUserInfoRes selectUserInfo(int userIdx){
+        String selectUserInfoQuery =
+                "SELECT u.userIdx as userIdx, \n" +
+                    "u.nickName as nickName, \n" +
+                    "u.name as name, \n" +
+                    "u.profileImgUrl as profileImgUrl, \n" +
+                    "u.website as website, \n" +
+                    "u.introduction as introduction,\n"+
+                    "If(postCount is null, 0, postCount) as postCount, \n" +
+                    "If(followerCount is null, 0, followerCount) as followerCount, \n" +
+                    "If(followingCount is null, 0, followingCount) as followingCount \n" +
+                "FROM User as u\n" +
+                    "left join (select userIdx, count(postIdx) as postCount from Post " +
+                        "where status = 'ACTIVE' group by userIdx) p on p.userIdx = u.userIdx\n" +
+                    "left join (select followerIdx, count(followIdx) as followerCount from Follow " +
+                        "where status = 'ACTIVE' group by followerIdx) fc on fc.followerIdx = u.userIdx\n" +
+                    "left join (select followeeIdx, count(followIdx) as followingCount from Follow " +
+                        "where status = 'ACTIVE' group by followeeIdx) f on f.followeeIdx = u.userIdx\n" +
+                "WHERE u.userIdx = ? and u.status = 'ACTIVE' " +
+                "GROUP BY u.userIdx";
+
+        int selectUserInfoParam = userIdx;
+        try {
+            return this.jdbcTemplate.queryForObject(selectUserInfoQuery,
+                    (rs, rowNum) -> new GetUserInfoRes(
+                            rs.getString("nickName"),
+                            rs.getString("name"),
+                            rs.getString("profileImgUrl"),
+                            rs.getString("website"),
+                            rs.getString("introduction"),
+                            rs.getInt("followerCount"),
+                            rs.getInt("followingCount"),
+                            rs.getInt("postCount")
+                    ), selectUserInfoParam);
+        } catch (EmptyResultDataAccessException e){  // 쿼리 결과가 없는 경우
+            return null;
+        }
+    }
+
+    // User 게시글 조회
+    public List<GetUserPostsRes> selectUserPosts(int userIdx){
+        String selectUserPostsQuery =
+                "SELECT p.postIdx as postIdx, \n" +
+                    "pi.imgUrl as postImgUrl\n" +
+                "FROM Post as p\n" +
+                    "join PostImgUrl as pi on pi.postIdx = p.postIdx and pi.status = 'ACTIVE'\n" +
+                    "join User as u on u.userIdx = p.userIdx\n" +
+                "WHERE u.userIdx = ? and p.status = 'ACTIVE'\n" +
+                "GROUP BY p.postIdx\n" +
+                "HAVING min(pi.postImgUrlIdx)\n" +
+                "ORDER BY p.postIdx;";
+
+        int selectUserPostsParam = userIdx;
+        return this.jdbcTemplate.query(selectUserPostsQuery,
+                (rs,rowNum) -> new GetUserPostsRes(
+                        rs.getInt("postIdx"),
+                        rs.getString("postImgUrl")
+                ), selectUserPostsParam);
     }
 
     public GetUserRes getUsersByEmail(String email){
@@ -73,7 +121,14 @@ public class UserDao {
         return this.jdbcTemplate.queryForObject(checkEmailQuery,
                 int.class,
                 checkEmailParams);
+    }
 
+    public int checkUserExist(int userIdx){
+        String checkUserExistQuery = "select exists(select userIdx from User where userIdx = ?)";
+        int checkUserExistParam = userIdx;
+        return this.jdbcTemplate.queryForObject(checkUserExistQuery,
+                int.class,
+                checkUserExistParam);
     }
 
     public int modifyUserName(PatchUserReq patchUserReq){
