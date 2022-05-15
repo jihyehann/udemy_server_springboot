@@ -77,16 +77,25 @@ public class PostDao {
     public int checkUserExist(int userIdx){
         String checkUserExistQuery = "select exists(select userIdx from User where userIdx = ?)";
         int checkUserExistParam = userIdx;
-        return this.jdbcTemplate.queryForObject(checkUserExistQuery,
+        return this.jdbcTemplate.queryForObject(
+                checkUserExistQuery,
                 int.class,
                 checkUserExistParam);
+    }
+
+    public int checkPostExist(int postIdx){
+        String checkPostExistQuery = "select exists(select postIdx from Post where postIdx = ?)";
+        int checkPostExistParam = postIdx;
+        return this.jdbcTemplate.queryForObject(
+                checkPostExistQuery,
+                int.class,
+                checkPostExistParam);
     }
 
     public int insertPosts(int userIdx, PostPostsReq postPostsReq){
         String insertPostQuery = "INSERT INTO Post(userIdx, content) VALUES (?,?)";
         Object []insertPostsParams = new Object[] {userIdx, postPostsReq.getContent()};
-        this.jdbcTemplate.update(insertPostQuery,
-                insertPostsParams);
+        this.jdbcTemplate.update(insertPostQuery, insertPostsParams);
 
         String lastInsertIdQuery = "select last_insert_id()"; // 가장 마지막에 저장된 id 값을 리턴해주는 쿼리문
         return this.jdbcTemplate.queryForObject(lastInsertIdQuery, int.class); // 방금 추가된 id값 리턴
@@ -95,10 +104,15 @@ public class PostDao {
     public int insertPostImgs(int postIdx, PostImgUrlsReq postImgUrlsReq){
         String insertPostImgsQuery = "INSERT INTO PostImgUrl(postIdx, imgUrl) VALUES (?,?)";
         Object []insertPostImgsParams = new Object[] {postIdx, postImgUrlsReq.getImgUrl()};
-        this.jdbcTemplate.update(insertPostImgsQuery,
-                insertPostImgsParams);
+        this.jdbcTemplate.update(insertPostImgsQuery, insertPostImgsParams);
 
         String lastInsertIdQuery = "select last_insert_id()"; // 가장 마지막에 저장된 id 값을 리턴해주는 쿼리문
         return this.jdbcTemplate.queryForObject(lastInsertIdQuery, int.class); // 방금 추가된 id값 리턴
+    }
+
+    public int updatePost(int userIdx, String content){
+        String updatePostQuery = "UPDATE Post SET content=? WHERE postIdx=?";
+        Object []updatePostParams = new Object[] {content, userIdx};
+        return this.jdbcTemplate.update(updatePostQuery, updatePostParams);
     }
 }

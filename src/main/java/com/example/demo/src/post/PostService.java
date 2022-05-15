@@ -2,6 +2,7 @@ package com.example.demo.src.post;
 
 import com.example.demo.config.BaseException;
 import com.example.demo.config.BaseResponseStatus;
+import com.example.demo.src.post.model.PatchPostsReq;
 import com.example.demo.src.post.model.PostPostsReq;
 import com.example.demo.src.post.model.PostPostsRes;
 import com.example.demo.utils.JwtService;
@@ -31,6 +32,25 @@ public class PostService {
                 postDao.insertPostImgs(postIdx, postPostsReq.getPostImgUrls().get(i));
             }
             return new PostPostsRes(postIdx);
+        } catch (Exception exception) {
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
+
+    public void modifyPost(int userIdx, int postIdx, PatchPostsReq patchPostsReq) throws BaseException {
+        if(postProvider.checkUserExist(userIdx) == 0) {
+            throw new BaseException(BaseResponseStatus.USERS_EMPTY_USER_ID);
+        }
+        if(postProvider.checkPostExist(postIdx) == 0) {
+            throw new BaseException(BaseResponseStatus.POSTS_EMPTY_POST_ID);
+        }
+
+        try {
+            int result = postDao.updatePost(postIdx, patchPostsReq.getContent()); //성공1, 실패0
+            if(result == 0) {
+                throw new BaseException(BaseResponseStatus.MODIFY_FAIL_POST);
+            }
+
         } catch (Exception exception) {
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }

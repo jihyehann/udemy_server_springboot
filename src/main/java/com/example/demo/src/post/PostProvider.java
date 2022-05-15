@@ -55,4 +55,11 @@ public class PostProvider {
         }
     }
 
+    public int checkPostExist(int postIdx) throws BaseException {
+        try{
+            return postDao.checkPostExist(postIdx);
+        } catch (Exception exception){
+            throw  new BaseException(DATABASE_ERROR);
+        }
+    }
 }
