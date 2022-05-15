@@ -110,9 +110,15 @@ public class PostDao {
         return this.jdbcTemplate.queryForObject(lastInsertIdQuery, int.class); // 방금 추가된 id값 리턴
     }
 
-    public int updatePost(int userIdx, String content){
+    public int updatePost(int postIdx, String content){
         String updatePostQuery = "UPDATE Post SET content=? WHERE postIdx=?";
-        Object []updatePostParams = new Object[] {content, userIdx};
+        Object []updatePostParams = new Object[] {content, postIdx};
+        return this.jdbcTemplate.update(updatePostQuery, updatePostParams);
+    }
+
+    public int updatePostStatus(int postIdx){
+        String updatePostQuery = "UPDATE Post SET status='INACTIVE' WHERE postIdx=?";
+        Object []updatePostParams = new Object[] {postIdx};
         return this.jdbcTemplate.update(updatePostQuery, updatePostParams);
     }
 }

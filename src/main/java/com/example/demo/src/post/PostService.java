@@ -55,4 +55,19 @@ public class PostService {
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
     }
+
+    public void deletePost(int postIdx) throws BaseException {
+        if(postProvider.checkPostExist(postIdx) == 0) {
+            throw new BaseException(BaseResponseStatus.POSTS_EMPTY_POST_ID);
+        }
+
+        try {
+            int result = postDao.updatePostStatus(postIdx);
+            if(result == 0) {
+                throw new BaseException(BaseResponseStatus.DELETE_FAIL_POST);
+            }
+        } catch (Exception exception) {
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
 }
