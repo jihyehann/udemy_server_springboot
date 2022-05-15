@@ -7,7 +7,7 @@ spring:
 
   datasource:
     platform: mysql
-    url: jdbc:mysql://database-udemy.czzwjmiybvuq.ap-northeast-2.rds.amazonaws.com/udemy_schema
+    url: jdbc:mysql://database-udemy.czzwjmiybvuq.ap-northeast-2.rds.amazonaws.com:3306/udemy_schema
     username: admin
     password: 12341234
     driver-class-name: com.mysql.cj.jdbc.Driver # mysql 8버전

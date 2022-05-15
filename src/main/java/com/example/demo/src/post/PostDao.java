@@ -2,6 +2,8 @@ package com.example.demo.src.post;
 
 import com.example.demo.src.post.model.GetPostImgRes;
 import com.example.demo.src.post.model.GetPostsRes;
+import com.example.demo.src.post.model.PostImgUrlsReq;
+import com.example.demo.src.post.model.PostPostsReq;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -78,5 +80,25 @@ public class PostDao {
         return this.jdbcTemplate.queryForObject(checkUserExistQuery,
                 int.class,
                 checkUserExistParam);
+    }
+
+    public int insertPosts(int userIdx, PostPostsReq postPostsReq){
+        String insertPostQuery = "INSERT INTO Post(userIdx, content) VALUES (?,?)";
+        Object []insertPostsParams = new Object[] {userIdx, postPostsReq.getContent()};
+        this.jdbcTemplate.update(insertPostQuery,
+                insertPostsParams);
+
+        String lastInsertIdQuery = "select last_insert_id()"; // 가장 마지막에 저장된 id 값을 리턴해주는 쿼리문
+        return this.jdbcTemplate.queryForObject(lastInsertIdQuery, int.class); // 방금 추가된 id값 리턴
+    }
+
+    public int insertPostImgs(int postIdx, PostImgUrlsReq postImgUrlsReq){
+        String insertPostImgsQuery = "INSERT INTO PostImgUrl(postIdx, imgUrl) VALUES (?,?)";
+        Object []insertPostImgsParams = new Object[] {postIdx, postImgUrlsReq.getImgUrl()};
+        this.jdbcTemplate.update(insertPostImgsQuery,
+                insertPostImgsParams);
+
+        String lastInsertIdQuery = "select last_insert_id()"; // 가장 마지막에 저장된 id 값을 리턴해주는 쿼리문
+        return this.jdbcTemplate.queryForObject(lastInsertIdQuery, int.class); // 방금 추가된 id값 리턴
     }
 }
