@@ -48,6 +48,8 @@ public class PostController {
     @PostMapping("")
     public BaseResponse<PostPostsRes> createPosts(@RequestBody PostPostsReq postPostsReq) {
         try{
+            int userIdxByJwt = jwtService.getUserIdx();
+            postPostsReq.setUserIdx(userIdxByJwt);
 
             // 형식적 validation 2가지
             if(postPostsReq.getContent().length() > 450) {

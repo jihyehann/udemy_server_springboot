@@ -1,10 +1,8 @@
-package com.example.demo.src.user.model;
+package com.example.demo.src.auth.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-
-import javax.persistence.Column;
 
 @Getter
 @Setter
